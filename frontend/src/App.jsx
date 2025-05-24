@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css'; // We'll create this file for App-specific styles
+import './index.css'; // For global styles
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="app-container">
+      {/* Left Sidebar */}
+      <aside className="sidebar">
+        {/* Placeholder for sidebar content (icons, logo etc.) */}
+        <div className="sidebar-logo">P</div>
+        <nav className="sidebar-nav">
+          {/* Example nav items */}
+          <div className="nav-item">📊</div>
+          <div className="nav-item">📋</div>
+          <div className="nav-item">✉️</div>
+          {/* ... more icons */}
+        </nav>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="main-content-wrapper">
+        {/* Top Navbar/Header */}
+        <header className="navbar">
+          <div className="navbar-left">
+            <h1 className="navbar-title">Deals</h1> {/* Or "Job Tracker" */}
+          </div>
+          <div className="navbar-center">
+            {/* Search Bar */}
+            <input type="text" placeholder="Search" className="search-input" />
+          </div>
+          <div className="navbar-right">
+            {/* Add Button */}
+            <button className="add-button">+ Deal</button>
+            {/* User Profile */}
+            <div className="user-profile">
+              <img src="https://via.placeholder.com/30" alt="User" />
+              <span>Phyllis Yang</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Kanban Board Area */}
+        <main className="kanban-board-area">
+          {/* This is where our PipelineColumns will go */}
+          <h2>Your Pipelines will appear here</h2>
+          {/* Example of a column placeholder */}
+          <div className="kanban-column-placeholder">
+            <h3>To Do</h3>
+            <div className="card-placeholder">Card 1</div>
+            <div className="card-placeholder">Card 2</div>
+          </div>
+          {/* ... more column placeholders */}
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
