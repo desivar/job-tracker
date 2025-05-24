@@ -1,0 +1,192 @@
+/* src/App.css */
+
+.app-container {
+  display: flex; /* Use flexbox to put sidebar and main content side-by-side */
+  min-height: 100vh; /* Make sure it takes full viewport height */
+  font-family: sans-serif; /* A nice default font */
+  background-color: #f4f5f7; /* Light gray background for the main area */
+}
+
+/* --- Sidebar Styles --- */
+.sidebar {
+  width: 70px; /* Fixed width for the sidebar */
+  background-color: #5d3f82; /* Dark purple color from the screenshot */
+  padding: 15px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+.sidebar-logo {
+  font-size: 2em;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between nav items */
+}
+
+.nav-item {
+  font-size: 1.5em;
+  color: #c0c0c0; /* Lighter gray for icons */
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Light hover effect */
+  color: white;
+}
+
+
+/* --- Main Content Wrapper --- */
+.main-content-wrapper {
+  flex-grow: 1; /* Allows it to take up remaining space */
+  display: flex;
+  flex-direction: column; /* Navbar on top, kanban board below */
+}
+
+/* --- Navbar Styles --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow below navbar */
+  min-height: 60px; /* Ensure a minimum height */
+}
+
+.navbar-left .navbar-title {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+.navbar-center {
+  flex-grow: 1; /* Allow search bar to take available space */
+  display: flex;
+  justify-content: center; /* Center the search input */
+}
+
+.search-input {
+  width: 50%; /* Adjust width as needed */
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px; /* Rounded search bar */
+  font-size: 1em;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #5d3f82; /* Highlight color on focus */
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.add-button {
+  background-color: #6a1a72; /* A shade of purple for the button */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+  background-color: #8c2692;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.user-profile img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* --- Kanban Board Area --- */
+.kanban-board-area {
+  flex-grow: 1; /* Takes remaining vertical space */
+  padding: 20px;
+  display: flex; /* Will become a flex container for columns */
+  gap: 15px; /* Space between columns */
+  overflow-x: auto; /* Allows horizontal scrolling for many columns */
+}
+
+/* Placeholder styles for columns and cards */
+.kanban-column-placeholder {
+  min-width: 280px; /* Example width for columns */
+  background-color: #ebecf0; /* Light gray background for columns */
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 0 rgba(9,30,66,.25); /* Subtle shadow for columns */
+  align-self: flex-start; /* Prevents columns from stretching to full height */
+}
+
+.kanban-column-placeholder h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.card-placeholder {
+  background-color: white;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(9,30,66,.25);
+  cursor: grab;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.card-placeholder:active {
+    cursor: grabbing;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
