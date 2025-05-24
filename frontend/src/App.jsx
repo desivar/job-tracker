@@ -34,7 +34,7 @@ function App() {
             {/* User Profile */}
             <div className="user-profile">
               <img src="https://via.placeholder.com/30" alt="User" />
-              <span>Phyllis Yang</span>
+              <span>Desire Vargas</span>
             </div>
           </div>
         </header>
