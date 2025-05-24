@@ -75,8 +75,8 @@ function App() {
           <div className="navbar-right">
             <button className="add-button">+ Deal</button>
             <div className="user-profile">
-              <img src="https://via.placeholder.com/30" alt="User" />
-              <span>Phyllis Yang</span>
+             <img src="/images/bear.jpg" alt="User" />
+              <span>Desire Vargas</span>
             </div>
           </div>
         </header>
