@@ -1,3 +1,4 @@
+
 const mongodb = require("../db/database");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -17,4 +18,21 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllUsers };
+const getUserById = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const user = await mongodb
+      .getDatabase()
+      .db()
+      .collection(collection_name)
+      .findOne({ _id: new ObjectId(id) });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getAllUsers, getUserById };

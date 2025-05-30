@@ -2,38 +2,37 @@
 const mongodb = require("../db/database");
 const ObjectId = require("mongodb").ObjectId;
 
-const collection_name = "pipelines";
+const collection_name = "customers";
 
-const getAllPipelines = async (req, res, next) => {
+const getAllCustomers = async (req, res, next) => {
   try {
-    const users = await mongodb
+    const customers = await mongodb
       .getDatabase()
       .db()
       .collection(collection_name)
       .find()
       .toArray();
-    res.status(200).json(users);
+    res.status(200).json(customers);
   } catch (error) {
     next(error);
   }
 };
 
-
-const getPipelineById = async (req, res, next) => {
+const getCustomerById = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const pipeline = await mongodb
+    const customer = await mongodb
       .getDatabase()
       .db()
       .collection(collection_name)
       .findOne({ _id: new ObjectId(id) });
-    if (!pipeline) {
-      return res.status(404).json({ message: "Pipeline not found" });
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
     }
-    res.status(200).json(pipeline);
+    res.status(200).json(customer);
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { getAllPipelines, getPipelineById };
+module.exports = { getAllCustomers, getCustomerById };

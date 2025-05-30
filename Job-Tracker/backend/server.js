@@ -5,12 +5,17 @@ const mongodb = require("./db/database"); // Your MongoDB connection setup
 
 const userRoutes = require("./routes/user");
 const pipelineRoutes = require("./routes/pipelines");
+const jobroutes = require("./routes/jobs"); 
+const customerRoutes = require("./routes/customers"); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/users", userRoutes); // Use /api/users for clarity
 app.use("/pipelines", pipelineRoutes); 
+app.use("/jobs", jobroutes); // Use /api/jobs for clarity
+app.use("/customers", customerRoutes); // Use /api/customers for clarity
+
 
 
 

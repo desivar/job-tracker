@@ -5,5 +5,5 @@ const userCon = require("../controllers/user");
 
 //GET all users
 router.get("/", userCon.getAllUsers);
-
+router.get("/:id", userCon.getUserById);
 module.exports = router;
