@@ -2,6 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const mongodb = require("./db/database"); // Your MongoDB connection setup
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger-output.json');
 
 const userRoutes = require("./routes/user");
 const pipelineRoutes = require("./routes/pipelines");
@@ -15,6 +17,7 @@ app.use("/users", userRoutes); // Use /api/users for clarity
 app.use("/pipelines", pipelineRoutes); 
 app.use("/jobs", jobroutes); // Use /api/jobs for clarity
 app.use("/customers", customerRoutes); // Use /api/customers for clarity
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 
 
