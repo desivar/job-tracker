@@ -1,5 +1,6 @@
 // src/App.jsx
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import './index.css'; // For global styles
 import PipelineColumn from './components/PipelineColumn'; // Import the new component
@@ -51,6 +52,9 @@ function App() {
   ];
 
   return (
+    <Router>
+
+    
     <div className="app-container">
       {/* Left Sidebar */}
       <aside className="sidebar">
@@ -102,6 +106,7 @@ function App() {
         </main>
       </div>
     </div>
+    </Router>
   );
 }
 
