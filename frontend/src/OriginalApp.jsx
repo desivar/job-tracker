@@ -1,9 +1,8 @@
+// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import './index.css'; // For global styles
-import SideBar from './components/common/sideBar';
-
 import PipelineColumn from './components/PipelineColumn'; // Import the new component
 
 function App() {
@@ -64,7 +63,15 @@ function App() {
   return (
     <div className="app-container">
       {/* Left Sidebar */}
-      <SideBar />
+      <aside className="sidebar">
+        <div className="sidebar-logo">P</div>
+        <nav className="sidebar-nav">
+          <div className="nav-item">📊</div>
+          <div className="nav-item">📋</div>
+          <div className="nav-item">✉️</div>
+        </nav>
+      </aside>
+
       {/* Main Content Area */}
       <div className="main-content-wrapper">
         {/* Top Navbar/Header */}
