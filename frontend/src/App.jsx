@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import './index.css'; // For global styles
 import SideBar from './components/common/sideBar';
+import NavBar from './components/common/navBar';
 
 import PipelineColumn from './components/PipelineColumn'; // Import the new component
 
@@ -64,25 +65,11 @@ function App() {
   return (
     <div className="app-container">
       {/* Left Sidebar */}
-      <SideBar />
+        <SideBar />
       {/* Main Content Area */}
       <div className="main-content-wrapper">
         {/* Top Navbar/Header */}
-        <header className="navbar">
-          <div className="navbar-left">
-            <h1 className="navbar-title">Deals</h1>
-          </div>
-          <div className="navbar-center">
-            <input type="text" placeholder="Search" className="search-input" />
-          </div>
-          <div className="navbar-right">
-            <button className="add-button">+ Deal</button>
-            <div className="user-profile">
-             <img src="/images/bear.jpg" alt="User" />
-              <span>Desire Vargas</span>
-            </div>
-          </div>
-        </header>
+        <NavBar />
 
 
 
