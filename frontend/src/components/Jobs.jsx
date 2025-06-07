@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './Jobs.css'; // Optional: Create a CSS file for styling
 
 function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -10,6 +9,9 @@ function Jobs() {
     // Fetch jobs from the backend
     axios.get('http://localhost:5000/jobs')
       .then((response) => {
+        if (!response.data || !Array.isArray(response.data)) {
+          throw new Error('Invalid data format');
+        }
         setJobs(response.data);
         setLoading(false);
       })
