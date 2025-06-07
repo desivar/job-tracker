@@ -7,20 +7,9 @@ import NavBar from './components/common/navBar';
 import PipelineColumn from './components/PipelineColumn';
 import Jobs from './components/dummyJobs';
 
+import columnsData from './data/pipelineDummy';
+
 function App() {
-  const columnsData = [
-    {
-      id: 'qualified',
-      title: 'Qualified',
-      deals: [
-        { id: 'd1', title: 'Umbrella Corp deal', value: 10000 },
-        { id: 'd2', title: 'JMVD Inc deal', value: 3000 },
-        { id: 'd3', title: 'Ownerate LLP deal', value: 2000 },
-        { id: 'd4', title: 'Silicon Links Inc deal', value: 1000 },
-      ],
-    },
-    // Other columns...
-  ];
 
   return (
     <Router>
