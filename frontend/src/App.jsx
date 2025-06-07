@@ -51,10 +51,15 @@ function App() {
     }
   ];
 
-  return (
-    <Router>
+  {/*return(
+    <Routes>
+    <Route path="/" element={<h2>Welcome to the Kanban Board</h2>} />
+    <Route path="/jobs" element={<Jobs />} />
+    </Routes>
+  );
+  */}
 
-    
+  return (
     <div className="app-container">
       {/* Left Sidebar */}
       <aside className="sidebar">
@@ -85,6 +90,9 @@ function App() {
           </div>
         </header>
 
+
+
+
         {/* Kanban Board Area */}
         <main className="kanban-board-area">
           {/* Map through our dummy data to render columns */}
@@ -106,7 +114,6 @@ function App() {
         </main>
       </div>
     </div>
-    </Router>
   );
 }
 
