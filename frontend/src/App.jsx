@@ -27,12 +27,10 @@ function App() {
       <div className="app-container">
         {/* Sidebar */}
         <SideBar />
-
         {/* Main Content Area */}
         <div className="main-content-wrapper">
           {/* Top Navbar/Header */}
           <NavBar />
-
           {/* Routes */}
           <Routes>
             <Route
