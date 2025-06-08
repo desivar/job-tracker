@@ -1,7 +1,6 @@
 // src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../api/auth'; // Import your login function
 
 function LoginPage() {
   const [email, setEmail] = useState('');

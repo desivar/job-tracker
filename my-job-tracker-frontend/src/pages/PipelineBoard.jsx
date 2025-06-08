@@ -1,6 +1,6 @@
 // src/pages/PipelineBoard.jsx
 import React, { useState, useEffect } from 'react';
-// import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'; // For drag-and-drop
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'; // For drag-and-drop
 import JobCard from '../components/JobCard'; // Your JobCard component
 import { getAllJobs, updateJob } from '../api/jobs'; // API functions for jobs
 import { getAllPipelines } from '../api/pipelines'; // API functions for pipelines
@@ -82,44 +82,44 @@ function PipelineBoard() {
   return (
     <div className="pipeline-board-container">
       <h2>Job Pipeline Board</h2>
-      {/* <DragDropContext onDragEnd={onDragEnd}> */}
+      <DragDropContext onDragEnd={onDragEnd}>
         <div className="pipeline-columns">
           {activePipeline.steps.map((step) => (
             <div key={step} className="pipeline-column">
               <h3>{step}</h3>
-              {/* <Droppable droppableId={step}>
+              <Droppable droppableId={step}>
                 {(provided) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className="column-content"
-                  > */}
+                  >
                     {jobsByStep[step] && jobsByStep[step].map((job, index) => (
-                      // <Draggable key={job._id} draggableId={job._id} index={index}>
-                      //   {(provided) => (
-                      //     <div
-                      //       ref={provided.innerRef}
-                      //       {...provided.draggableProps}
-                      //       {...provided.dragHandleProps}
-                      //     >
+                      <Draggable key={job._id} draggableId={job._id} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
                                 <JobCard
                                   key={job._id}
                                   title={job.job_name}
                                   value={1000} // Placeholder, assuming value is on job or derived
                                 />
-                      //     </div>
-                      //   )}
-                      // </Draggable>
+                          </div>
+                        )}
+                      </Draggable>
                     ))}
-                    {/* {provided.placeholder}
+                    {provided.placeholder}
                   </div>
                 )}
-              </Droppable> */}
+              </Droppable>
               <button className="add-job-button">+ Add Job</button> {/* Link to Job creation form */}
             </div>
           ))}
         </div>
-      {/* </DragDropContext> */}
+      </DragDropContext>
     </div>
   );
 }
