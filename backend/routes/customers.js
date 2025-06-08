@@ -1,22 +1,21 @@
-// Imports
+//Imports
 const express = require("express");
 const router = express.Router();
-// Corrected import: Import the customer controller functions
-const customerCont = require("../controllers/customers"); 
+const customersController = require("../controllers/customers"); // Corrected variable name and matches the import
 
-// GET all customers
-router.get("/", customerCont.getAllCustomers);
+//GET all customers
+router.get("/", customersController.getAllCustomers);
 
-// GET a single customer by ID
-router.get("/:id", customerCont.getCustomerById);
+//GET a single customer by ID
+router.get("/:id", customersController.getCustomerById);
 
-// POST create a new customer
-router.post("/", customerCont.createCustomer);
+//POST new customer
+router.post("/", customersController.createCustomer);
 
-// PUT update an existing customer by ID
-router.put("/:id", customerCont.updateCustomer);
+//PUT (update) existing customer by ID
+router.put("/:id", customersController.updateCustomer);
 
-// DELETE a customer by ID
-router.delete("/:id", customerCont.deleteCustomer);
+//DELETE customer by ID
+router.delete("/:id", customersController.deleteCustomer);
 
 module.exports = router;
