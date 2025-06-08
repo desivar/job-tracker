@@ -5,7 +5,7 @@ const doc = {
     title: 'Job Tracker API',
     description: 'API documentation for the Job Tracker project'
   },
-  host: 'localhost:5500', // Change if using a different port
+  host: 'localhost:5000', // Change if using a different port
   schemes: ['http']
 };
 
