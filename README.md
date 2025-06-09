@@ -100,7 +100,7 @@ REACT_APP_BACKEND_URL=http://localhost:5000
     ```bash
     npm start
     ```
-    The React application will typically open in your browser at `http://localhost:3000`.
+    The React application will typically open in your browser at `http://localhost:5000`.
 
 ## Features and Usage
 
