@@ -1,6 +1,6 @@
 // backend/controllers/user.js
 
-const User = require('../models/User'); // Make sure your User model path is correct
+const User = require('../db/User'); // THIS IS THE CORRECTED LINE
 const bcrypt = require('bcryptjs'); // Needed for password hashing (e.g., in createUser)
 const jwt = require('jsonwebtoken'); // Needed for token generation/verification if login is in this controller
 
