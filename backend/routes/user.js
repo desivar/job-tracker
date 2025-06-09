@@ -1,31 +1,24 @@
 // backend/routes/user.js
 
 const express = require("express");
-const router = express.Router();
-const userCon = require("../controllers/user"); // Your controller import
-const authMiddleware = require("../middleware/authMiddleware"); // Middleware for authentication
+const router = express.Router(); // <--- FIX 1: Change this line to express.Router()
+const userCon = require("../controllers/user");
+const authMiddleware = require("../middleware/authMiddleware");
 
-// --- Public Routes (typically for unauthenticated access) ---
-// User registration
-router.post("/register", userCon.createUser); // Assuming createUser is for registration and is public
+// --- Public Routes ---
+router.post("/register", userCon.createUser);
 
-// --- Protected Routes (require authentication) ---
+// --- Protected Routes ---
 // GET all users (typically for admin views, requires auth)
-router.get("/", authMiddleware, userCon.getAllUsers);
-
+router.get("/", authMiddleware.protect, userCon.getAllUsers); // <--- FIX 2: Add .protect
 // Get the currently logged-in user's profile
-// This route MUST be placed BEFORE the /:id route,
-// otherwise '/me' would be incorrectly interpreted as an ID.
-router.get('/me', authMiddleware, userCon.getLoggedInUserProfile);
-
+router.get('/me', authMiddleware.protect, userCon.getLoggedInUserProfile); // <--- FIX 2: Add .protect
 // GET user by ID (for admin viewing specific users, requires auth)
-router.get("/:id", authMiddleware, userCon.getUserById);
-
+router.get("/:id", authMiddleware.protect, userCon.getUserById); // <--- FIX 2: Add .protect
 // PUT update user by ID (requires auth)
-router.put("/:id", authMiddleware, userCon.updateUser);
-
+router.put("/:id", authMiddleware.protect, userCon.updateUser); // <--- FIX 2: Add .protect
 // DELETE user by ID (requires auth)
-router.delete("/:id", authMiddleware, userCon.deleteUser);
+router.delete("/:id", authMiddleware.protect, userCon.deleteUser); // <--- FIX 2: Add .protect
 
 
 module.exports = router;
