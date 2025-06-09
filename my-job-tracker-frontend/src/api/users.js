@@ -25,3 +25,15 @@ export const deleteUser = async (id) => {
   const response = await apiClient.delete(`/users/${id}`);
   return response.data;
 };
+
+// Add this new function to your existing src/api/users.js file
+export const getCurrentUserProfile = async (token) => {
+  // Assuming apiClient can handle headers or you pass them directly
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`, // Send the JWT token in the Authorization header
+    },
+  };
+  const response = await apiClient.get('/users/me', config);
+  return response.data;
+};
