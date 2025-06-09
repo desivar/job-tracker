@@ -122,6 +122,7 @@ We welcome contributions! Please feel free to fork the repository, make your cha
 * Jaden Binettte
 * Shared Ordaz Santillan
 * Oluwashina Samuel Ibukun
+* Desire Vargas
 
 **Frontend:**
 
