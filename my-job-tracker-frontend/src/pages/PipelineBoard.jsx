@@ -1,6 +1,7 @@
 // src/pages/PipelineBoard.jsx
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'; // For drag-and-drop
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+
 import JobCard from '../components/JobCard'; // Your JobCard component
 import { getAllJobs, updateJob } from '../api/jobs'; // API functions for jobs
 import { getAllPipelines } from '../api/pipelines'; // API functions for pipelines
