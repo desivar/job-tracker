@@ -1,157 +1,169 @@
+// backend/controllers/user.js
 
-const mongodb = require("../db/database");
-const { ObjectId } = require("mongodb");
+const User = require('../models/User'); // Make sure your User model path is correct
+const bcrypt = require('bcryptjs'); // Needed for password hashing (e.g., in createUser)
+const jwt = require('jsonwebtoken'); // Needed for token generation/verification if login is in this controller
 
-const collection_name = "users";
-
-// Utility to validate ObjectId
-const isValidObjectId = (id) => ObjectId.isValid(id) && (String)(new ObjectId(id)) === id;
-
-const getAllUsers = async (req, res, next) => {
-  try {
-    const users = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .find()
-      .toArray();
-    res.status(200).json(users);
-  } catch (error) {
-    next(error);
-  }
+// --- Helper function for JWT token generation (if you handle login here) ---
+const generateToken = (id) => {
+    // Replace 'your_jwt_secret' with a strong, secret key from your environment variables
+    return jwt.sign({ id }, process.env.JWT_SECRET || 'your_jwt_secret', {
+        expiresIn: '1h', // Token expires in 1 hour
+    });
 };
 
-const getUserById = async (req, res, next) => {
-  const id = req.params.id;
 
-  if (!isValidObjectId(id)) {
-    return res.status(400).json({ message: "Invalid user ID format" });
-  }
-
-  try {
-    const user = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .findOne({ _id: new ObjectId(id) });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private (e.g., for admin)
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({}); // Find all users
+        res.status(200).json(users);
+    } catch (error) {
+        console.error('Error fetching all users:', error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    res.status(200).json(user);
-  } catch (error) {
-    next(error);
-  }
 };
 
-const createUser = async (req, res, next) => {
-  try {
-    const user = {
-      name: req.body.name,
-      email: req.body.email,
-      age: req.body.age,
-      preferences: req.body.preferences || {}
-    };
-
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .insertOne(user);
-
-    res.status(201).json({ id: result.insertedId });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const updateUser = async (req, res, next) => {
-  const id = req.params.id;
-
-  if (!isValidObjectId(id)) {
-    return res.status(400).json({ message: "Invalid user ID format" });
-  }
-
-  try {
-    const user = {
-      name: req.body.name,
-      email: req.body.email,
-      age: req.body.age,
-      preferences: req.body.preferences || {}
-    };
-
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .updateOne({ _id: new ObjectId(id) }, { $set: user });
-
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "User not found" });
+// @desc    Get user by ID
+// @route   GET /api/users/:id
+// @access  Private (e.g., for admin viewing specific user)
+exports.getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password'); // Find by ID, exclude password
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        console.error(`Error fetching user with ID ${req.params.id}:`, error);
+        // Handle CastError for invalid IDs (e.g., if ID format is wrong)
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid user ID' });
+        }
+        res.status(500).json({ message: 'Server error' });
     }
-
-    res.status(200).json({ message: "User updated" });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const deleteUser = async (req, res, next) => {
-  const id = req.params.id;
+// @desc    Create new user (e.g., for registration)
+// @route   POST /api/users
+// @access  Public
+exports.createUser = async (req, res) => {
+    const { name, email, password, age, preferences } = req.body;
 
-  if (!isValidObjectId(id)) {
-    return res.status(400).json({ message: "Invalid user ID format" });
-  }
+    try {
+        // Check if user already exists
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-  try {
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .deleteOne({ _id: new ObjectId(id) });
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "User not found" });
+        // Create new user
+        const newUser = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            age: age || null, // Allow age to be optional or null
+            preferences: preferences || {} // Default to empty object if not provided
+        });
+
+        if (newUser) {
+            res.status(201).json({
+                _id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                age: newUser.age,
+                preferences: newUser.preferences,
+                token: generateToken(newUser._id) // Generate token upon registration
+            });
+        } else {
+            res.status(400).json({ message: 'Invalid user data' });
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    res.status(200).json({ message: "User deleted" });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getUserProfile = async (req, res, next) => {
-  const userId = req.user?.id;
 
-  if (!userId || !isValidObjectId(userId)) {
-    return res.status(401).json({ message: "Not authorized or invalid user ID" });
-  }
+// @desc    Update user by ID
+// @route   PUT /api/users/:id
+// @access  Private (e.g., admin or user updating their own profile)
+exports.updateUser = async (req, res) => {
+    const { name, email, age, preferences } = req.body; // Password typically handled in a separate route
 
-  try {
-    const user = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .findOne({ _id: new ObjectId(userId) });
+    try {
+        const user = await User.findById(req.params.id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found in database" });
+        if (user) {
+            user.name = name || user.name;
+            user.email = email || user.email;
+            user.age = age !== undefined ? age : user.age; // Allow age to be explicitly set to null/0
+            user.preferences = preferences || user.preferences;
+
+            // Only update password if provided and hashed
+            if (req.body.password) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(req.body.password, salt);
+            }
+
+            const updatedUser = await user.save();
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                age: updatedUser.age,
+                preferences: updatedUser.preferences,
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(`Error updating user with ID ${req.params.id}:`, error);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    const { password, ...userWithoutPassword } = user;
-    res.status(200).json(userWithoutPassword);
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    next(error);
-  }
 };
 
-module.exports = {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  getUserProfile
+// @desc    Delete user by ID
+// @route   DELETE /api/users/:id
+// @access  Private (e.g., admin)
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            await User.deleteOne({ _id: req.params.id }); // Use deleteOne with filter
+            res.json({ message: 'User removed' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(`Error deleting user with ID ${req.params.id}:`, error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// @desc    Get current logged-in user's profile
+// @route   GET /api/users/me
+// @access  Private (authMiddleware ensures this)
+exports.getLoggedInUserProfile = async (req, res) => {
+    try {
+        // req.user is populated by the authMiddleware (from backend/middleware/authMiddleware.js)
+        // It contains the ID of the user who is currently authenticated via their JWT token.
+        const user = await User.findById(req.user.id).select('-password'); // Find user by ID and exclude the password field for security
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user); // Send the user data as a JSON response
+    } catch (error) {
+        console.error('Error fetching logged-in user profile:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 };
