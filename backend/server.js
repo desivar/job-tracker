@@ -13,7 +13,7 @@ const app = express();
 
 // CORS Middleware - ADD THIS BLOCK *BEFORE* your routes
 app.use(cors({
-    origin: 'http://localhost:5500', // IMPORTANT: This must be the exact URL and port of your frontend
+    origin: 'http://localhost:5000', // IMPORTANT: This must be the exact URL and port of your frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // If you're using cookies or sessions
 }));
