@@ -1,24 +1,18 @@
-// backend/routes/user.js
-
 const express = require("express");
-const router = express.Router(); // <--- FIX 1: Change this line to express.Router()
-const userCon = require("../controllers/user");
-const authMiddleware = require("../middleware/authMiddleware");
+const router = express.Router();
+const userController = require("../controllers/user");
+const { protect } = require("../middleware/authMiddleware"); // If you're using authentication
 
-// --- Public Routes ---
-router.post("/register", userCon.createUser);
+// Public routes
+router.post("/", userController.createUser); // Register a new user
+// Add a login route if handled separately from createUser (e.g., /api/users/login)
+// router.post("/login", userController.loginUser); // Assuming you have a login function
 
-// --- Protected Routes ---
-// GET all users (typically for admin views, requires auth)
-router.get("/", authMiddleware.protect, userCon.getAllUsers); // <--- FIX 2: Add .protect
-// Get the currently logged-in user's profile
-router.get('/me', authMiddleware.protect, userCon.getLoggedInUserProfile); // <--- FIX 2: Add .protect
-// GET user by ID (for admin viewing specific users, requires auth)
-router.get("/:id", authMiddleware.protect, userCon.getUserById); // <--- FIX 2: Add .protect
-// PUT update user by ID (requires auth)
-router.put("/:id", authMiddleware.protect, userCon.updateUser); // <--- FIX 2: Add .protect
-// DELETE user by ID (requires auth)
-router.delete("/:id", authMiddleware.protect, userCon.deleteUser); // <--- FIX 2: Add .protect
-
+// Protected routes (example - adjust as per your requirements)
+router.get("/", protect, userController.getAllUsers); // Admin only
+router.get("/me", protect, userController.getLoggedInUserProfile); // Get own profile
+router.get("/:id", protect, userController.getUserById); // Admin or specific logic
+router.put("/:id", protect, userController.updateUser); // Admin or user updating own
+router.delete("/:id", protect, userController.deleteUser); // Admin only
 
 module.exports = router;
