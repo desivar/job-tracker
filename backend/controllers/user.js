@@ -4,6 +4,7 @@ const User = require('../db/User'); // THIS IS THE CORRECTED LINE
 const bcrypt = require('bcryptjs'); // Needed for password hashing (e.g., in createUser)
 const jwt = require('jsonwebtoken'); // Needed for token generation/verification if login is in this controller
 
+
 // --- Helper function for JWT token generation (if you handle login here) ---
 const generateToken = (id) => {
     // Replace 'your_jwt_secret' with a strong, secret key from your environment variables
@@ -50,7 +51,7 @@ exports.getUserById = async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 exports.createUser = async (req, res) => {
-    const { name, email, password, age, preferences } = req.body;
+    const { name, email, password,role } = req.body;
 
     try {
         // Check if user already exists
@@ -68,8 +69,8 @@ exports.createUser = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            age: age || null, // Allow age to be optional or null
-            preferences: preferences || {} // Default to empty object if not provided
+            role: role || 'user' // Use the destructured 'role' or default to 'user'
+            // REMOVE age and preferences lines completely
         });
 
         if (newUser) {
@@ -77,8 +78,10 @@ exports.createUser = async (req, res) => {
                 _id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
-                age: newUser.age,
-                preferences: newUser.preferences,
+                password: undefined, 
+                role: newUser.role, // Include role in response
+                
+                
                 token: generateToken(newUser._id) // Generate token upon registration
             });
         } else {
@@ -95,7 +98,7 @@ exports.createUser = async (req, res) => {
 // @route   PUT /api/users/:id
 // @access  Private (e.g., admin or user updating their own profile)
 exports.updateUser = async (req, res) => {
-    const { name, email, age, preferences } = req.body; // Password typically handled in a separate route
+    const { name, email } = req.body; // Password typically handled in a separate route
 
     try {
         const user = await User.findById(req.params.id);
@@ -103,8 +106,8 @@ exports.updateUser = async (req, res) => {
         if (user) {
             user.name = name || user.name;
             user.email = email || user.email;
-            user.age = age !== undefined ? age : user.age; // Allow age to be explicitly set to null/0
-            user.preferences = preferences || user.preferences;
+            
+        
 
             // Only update password if provided and hashed
             if (req.body.password) {
@@ -117,8 +120,7 @@ exports.updateUser = async (req, res) => {
                 _id: updatedUser._id,
                 name: updatedUser.name,
                 email: updatedUser.email,
-                age: updatedUser.age,
-                preferences: updatedUser.preferences,
+                
             });
         } else {
             res.status(404).json({ message: 'User not found' });
