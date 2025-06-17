@@ -1,4 +1,4 @@
-/// src/api/apiClient.js
+// src/api/apiClient.js
 import axios from 'axios';
 
 // Get backend URL from environment variables
