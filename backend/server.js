@@ -8,7 +8,7 @@ const path = require('path'); // Node.js path module
 const app = express(); // Initialize Express app
 
 // --- Configuration ---
-const port = process.env.PORT || 5000; // Use port from .env or default to 5000
+const port = process.env.PORT || 5500; // Use port from .env or default to 5000
 
 // --- Database Connection ---
 connectDB()
