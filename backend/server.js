@@ -23,6 +23,7 @@ connectDB()
 
 // CORS setup: IMPORTANT for frontend communication in development
 const allowedOrigins = [
+    'http://localhost:5500', // Your backend's current actual URL
     'http://localhost:5501', // Your frontend's current actual URL
     'http://localhost:5173'  // Keep this in case your frontend setup changes or you switch to Vite's default
 ];
