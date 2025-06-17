@@ -20,15 +20,29 @@ connectDB()
     console.error('MongoDB connection failed:', err);
     process.exit(1); // Exit process with failure
   });
-
-// --- Middleware ---
+  // --- Middleware ---
 
 // CORS setup: IMPORTANT for frontend communication in development
+const allowedOrigins = [
+    'http://localhost:5501', // Your frontend's current actual URL
+    'http://localhost:5173'  // Keep this in case your frontend setup changes or you switch to Vite's default
+    // Add other origins if your frontend can run from different URLs (e.g., your production domain)
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from your Vite frontend development server
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, // Allow cookies/authorization headers to be sent
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies/authorization headers to be sent
 }));
+
 
 // Body parsers for incoming request data
 app.use(express.json()); // Parses JSON request bodies
