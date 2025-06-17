@@ -12,11 +12,34 @@ const generateToken = (id) => {
         expiresIn: '1h', // Token expires in 1 hour
     });
 };
+// @desc    Authenticate user & get token (Login)
+// @route   POST /api/users/login
+// @access  Public
+exports.loginUser = async (req, res) => {
+    const { email, password } = req.body;
 
+    try {
+        // Check if user exists by email
+        const user = await User.findOne({ email });
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private (e.g., for admin)
+        // Check password using the method defined in User model
+        if (user && (await user.matchPassword(password))) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role, // Ensure 'role' is in your User schema
+                token: generateToken(user._id),
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid email or password' });
+        }
+    } catch (error) {
+        console.error('Error during user login:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}); // Find all users

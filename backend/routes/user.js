@@ -7,7 +7,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 // Public routes
 router.post("/", userController.createUser); // Register a new user
-router.post("/login", userController.loginUser); // <--- UNCOMMENT THIS LINE
+router.post("/login", userController.loginUser); 
 
 // Protected routes (example - adjust as per your requirements)
 router.get("/", protect, userController.getAllUsers); // Admin only
