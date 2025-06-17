@@ -1,12 +1,13 @@
+// backend/routes/userRoutes.js
 const express = require("express");
 const router = express.Router();
+// Ensure userController is correctly imported, including loginUser
 const userController = require("../controllers/user");
-const { protect } = require("../middleware/authMiddleware"); // If you're using authentication
+const { protect } = require("../middleware/authMiddleware");
 
 // Public routes
 router.post("/", userController.createUser); // Register a new user
-// Add a login route if handled separately from createUser (e.g., /api/users/login)
-// router.post("/login", userController.loginUser); // Assuming you have a login function
+router.post("/login", userController.loginUser); // <--- UNCOMMENT THIS LINE
 
 // Protected routes (example - adjust as per your requirements)
 router.get("/", protect, userController.getAllUsers); // Admin only
