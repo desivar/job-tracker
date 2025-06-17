@@ -17,15 +17,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    age: {
-      type: Number,
-      required: false, // Age is optional
-    },
-    preferences: {
-      type: Object, // Or a more specific schema for preferences
-      default: {},
-    },
-    // You can add more fields here like isAdmin, createdAt, etc.
+    
   },
   {
     timestamps: true, // Adds createdAt and updatedAt timestamps

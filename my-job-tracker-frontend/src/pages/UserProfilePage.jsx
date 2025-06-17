@@ -89,7 +89,7 @@ function UserProfilePage() {
           <p><strong>Name:</strong> {user.name}</p>
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Age:</strong> {user.age}</p>
-          <p><strong>Preferences:</strong> {JSON.stringify(user.preferences || {}, null, 2)}</p>
+          
         </div>
       )}
     </div>
