@@ -1,15 +1,16 @@
-const swaggerAutogen = require('swagger-autogen')();
+const swaggerAutogen = require("swagger-autogen")();
+const config = require("./config/config");
 
 const doc = {
   info: {
-    title: 'Job Tracker API',
-    description: 'API documentation for the Job Tracker project'
+    title: "Job Tracker API",
+    description: "API documentation for the Job Tracker project",
   },
-  host: 'localhost:5000', // Change if using a different port
-  schemes: ['http']
+  host: `localhost:${config.port}`,
+  schemes: ["http"],
 };
 
-const outputFile = './swagger-output.json';
-const endpointsFiles = ['./server.js']; // Main entry point of your app
+const outputFile = "./swagger-output.json";
+const endpointsFiles = ["./server.js"]; // Main entry point of your app
 
 swaggerAutogen(outputFile, endpointsFiles, doc);

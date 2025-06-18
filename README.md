@@ -1,133 +1,339 @@
-# Job Tracker & Customer Management System
+# Job Tracker Application
 
-## Project Overview
+A comprehensive job tracking and customer management system built with Node.js, Express, MongoDB, and React.
 
-This project is a full-stack web application designed to help businesses manage their job workflows and customer relationships efficiently. It features a robust backend API built with Node.js and Express, connected to a MongoDB database, and a dynamic frontend built with React.
+## Table of Contents
 
-Key functionalities include:
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Database Structure](#database-structure)
+- [Authentication & Authorization](#authentication--authorization)
+- [API Documentation](#api-documentation)
+- [Setup & Installation](#setup--installation)
 
-* **User Management:** Create, view, update, and delete user accounts (with future potential for authentication and roles).
-* **Customer Management:** Store and organize customer contact information and notes.
-* **Job Tracking:** Create and manage jobs, link them to specific customers and customizable pipelines.
-* **Pipeline Management:** Define flexible, multi-step workflows (pipelines) to track job progress through different stages (e.g., Qualified, Proposal Sent, Closed Won).
-* **API Documentation:** Built-in Swagger UI for easy exploration and testing of API endpoints.
+## Overview
 
-## Technologies Used
+The Job Tracker application is a role-based system designed to help businesses manage jobs, customers, and pipelines efficiently. It features a robust backend API built with Express.js and MongoDB, and a React-based frontend interface.
 
-### Backend
+## Features
 
-* **Node.js**: JavaScript runtime environment.
-* **Express.js**: Web application framework for Node.js.
-* **MongoDB**: NoSQL database for flexible data storage.
-* **Mongoose (likely used, though not explicitly provided in controllers)**: ODM for MongoDB and Node.js.
-* **`dotenv`**: For managing environment variables.
-* **`cors`**: For enabling Cross-Origin Resource Sharing.
-* **`swagger-autogen` & `swagger-ui-express`**: For automated API documentation.
+- **User Management**
 
-### Frontend
+  - Role-based access control (Admin, Manager, Employee)
+  - Secure authentication using JWT
+  - User profile management
+  - Department-based organization
 
-* **React**: JavaScript library for building user interfaces.
-* **React Router DOM**: For declarative routing in React applications.
-* **Axios**: Promise-based HTTP client for making API requests.
-* **HTML5 / CSS3**: For structuring and styling the web application.
+- **Job Management**
 
-## Getting Started
+  - Create and track jobs
+  - Status updates
+  - Assignment management
+  - History tracking
 
-Follow these steps to get the project up and running on your local machine.
+- **Customer Management**
 
-### Prerequisites
+  - Customer profiles
+  - Contact information
+  - Interaction history
+  - Document management
 
-* Node.js (LTS version recommended)
-* npm (comes with Node.js) or Yarn
-* MongoDB Atlas account or a local MongoDB instance running
+- **Pipeline Management**
 
-### 1. Backend Setup
+  - Stage tracking
+  - Progress monitoring
+  - Timeline management
 
-1. **Clone the Repository:**
-       ```bash
-    git clone <YOUR_BACKEND_REPO_URL>
-    cd <YOUR_BACKEND_REPO_NAME> # e.g., cd job-tracker-backend
-        ```
-    (Note: You'll replace `<YOUR_BACKEND_REPO_URL>` and `<YOUR_BACKEND_REPO_NAME>` with your actual repository details.)
+- **Dashboard & Analytics**
+  - Performance metrics
+  - Status overview
+  - Trend analysis
 
-2. **Install Dependencies:**
-        ```bash
-    npm install
-        # or yarn install
-           ```
+## Architecture
 
-3. **Environment Variables:**
-    Create a `.env` file in the root of your backend directory and add your MongoDB connection URI:
-         ```
-    MONGODB_URI="mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority"
-           ```
-    (Replace `<username>`, `<password>`, `<cluster-url>`, and `<database-name>` with your MongoDB Atlas credentials or local connection string.)
+### Backend Structure
 
-4. **Generate Swagger Documentation:**
-    Ensure your `swagger-autogen` script's `endpointsFiles` points to your main backend file (e.g., `./backend/index.js`). Then run the script:
-         ```bash
-    node swagger.js # Or whatever you named your swagger-autogen config file
-          ```
+```
+backend/
+├── config/
+│   └── config.js         # Configuration management
+├── controllers/
+│   ├── auth.js           # Authentication logic
+│   ├── users.js          # User management
+│   ├── jobs.js           # Job operations
+│   ├── customers.js      # Customer management
+│   └── pipelines.js      # Pipeline handling
+├── middleware/
+│   ├── auth.js           # Authentication middleware
+│   ├── error.js          # Error handling
+│   └── validate.js       # Request validation
+├── models/
+│   ├── User.js           # User schema
+│   ├── Job.js            # Job schema
+│   ├── Customer.js       # Customer schema
+│   └── Pipeline.js       # Pipeline schema
+├── routes/
+│   ├── auth.js           # Auth routes
+│   ├── users.js          # User routes
+│   ├── jobs.js           # Job routes
+│   ├── customers.js      # Customer routes
+│   └── pipelines.js      # Pipeline routes
+├── utils/
+│   └── errorResponse.js  # Error utility
+└── server.js             # Application entry point
+```
 
-5. **Start the Backend Server:**
-           ```bash
-    npm start # Or node index.js
-          ```
-    The backend server will run on `http://localhost:5000`.
+### Database Structure
 
-6. **Access API Documentation:**
-    Once the backend is running, open your browser and navigate to `http://localhost:5000/api-docs` to see the Swagger UI.
+#### User Model
 
-### 2. Frontend Setup
+```javascript
+{
+  username: String,
+  email: String,
+  password: String (hashed),
+  firstName: String,
+  lastName: String,
+  role: Enum['admin', 'manager', 'employee'],
+  department: String,
+  permissions: Array,
+  active: Boolean,
+  lastLogin: Date
+}
+```
 
-     ```bash
-    git clone <YOUR_FRONTEND_REPO_URL>
-    cd <YOUR_FRONTEND_REPO_NAME> # e.g., cd job-tracker-frontend
-    ```
-    (Note: You'll replace `<YOUR_FRONTEND_REPO_URL>` and `<YOUR_FRONTEND_REPO_NAME>` with your actual repository details.)
+#### Job Model
 
-2.  **Install Dependencies:**
-    ```bash
-    npm install
-    # or yarn install
-    ```
-3.  **Environment Variables:**
-    Create a `.env` file in the root of your frontend directory (`my-job-tracker-frontend/`) and add:
-        ```
-REACT_APP_BACKEND_URL=http://localhost:5000
-     ```
-4.  **Start the Frontend Development Server:**
-    ```bash
-    npm start
-    ```
-    The React application will typically open in your browser at `http://localhost:5000`.
+```javascript
+{
+  title: String,
+  description: String,
+  status: String,
+  assignedTo: ObjectId (ref: User),
+  customer: ObjectId (ref: Customer),
+  pipeline: ObjectId (ref: Pipeline),
+  startDate: Date,
+  dueDate: Date,
+  completedDate: Date,
+  priority: String,
+  tags: Array
+}
+```
 
-## Features and Usage
+#### Customer Model
 
-* **Login Page:** Access the application (currently with a mock login; future versions will include full authentication).
-* **Dashboard:** Overview of key project metrics.
-* **Customers:** View, add, edit, and delete customer details.
-* **Jobs (Pipeline Board):** Visualize and manage jobs in a Kanban-style board, moving them through different stages of your defined pipelines.
-* **Pipelines:** Define and customize the steps for various job types.
-* **Users:** Admin-level management of user accounts.
+```javascript
+{
+  name: String,
+  email: String,
+  phone: String,
+  address: Object,
+  contactPerson: String,
+  status: String,
+  assignedTo: ObjectId (ref: User),
+  createdBy: ObjectId (ref: User)
+}
+```
+
+#### Pipeline Model
+
+```javascript
+{
+  name: String,
+  stages: Array,
+  jobs: Array[ObjectId] (ref: Job),
+  createdBy: ObjectId (ref: User),
+  status: String
+}
+```
+
+### Middleware Structure
+
+1. **Authentication Middleware (auth.js)**
+
+   - Token verification
+   - User authentication
+   - Role-based access control
+
+   ```javascript
+   protect: Verifies JWT token and adds user to request
+   authorize: Checks user permissions for specific routes
+   ```
+
+2. **Validation Middleware (validate.js)**
+
+   - Request data validation
+   - Schema validation using Joi
+
+   ```javascript
+   validate: Validates request body against defined schemas
+   ```
+
+3. **Error Handling Middleware (error.js)**
+   - Global error handling
+   - Error formatting
+   - Development vs Production errors
+
+### Authentication & Authorization
+
+1. **JWT-based Authentication**
+
+   - Token generation on login/registration
+   - Token verification for protected routes
+   - Refresh token mechanism
+
+2. **Role-Based Access Control**
+
+   ```javascript
+   Permissions by Role:
+   - Admin: Full system access
+   - Manager: Create/Edit access
+   - Employee: View-only access
+   ```
+
+3. **Permission System**
+   ```javascript
+   Available Permissions:
+   - create_job, edit_job, delete_job, view_job
+   - create_customer, edit_customer, delete_customer, view_customer
+   - create_pipeline, edit_pipeline, delete_pipeline, view_pipeline
+   - view_dashboard, manage_users
+   ```
+
+## API Documentation
+
+### Authentication Endpoints
+
+```
+POST /api/auth/register    # Register new user
+POST /api/auth/login       # User login
+GET  /api/auth/me         # Get current user
+POST /api/auth/logout     # Logout user
+```
+
+### User Endpoints
+
+```
+GET    /api/users         # Get all users (Admin)
+POST   /api/users/create  # Create user (Admin)
+GET    /api/users/:id     # Get user by ID (Admin)
+PUT    /api/users/:id     # Update user (Admin)
+DELETE /api/users/:id     # Delete user (Admin)
+```
+
+### Job Endpoints
+
+```
+GET    /api/jobs          # Get all jobs
+POST   /api/jobs          # Create job
+GET    /api/jobs/:id      # Get job by ID
+PUT    /api/jobs/:id      # Update job
+DELETE /api/jobs/:id      # Delete job
+```
+
+### Customer Endpoints
+
+```
+GET    /api/customers     # Get all customers
+POST   /api/customers     # Create customer
+GET    /api/customers/:id # Get customer by ID
+PUT    /api/customers/:id # Update customer
+DELETE /api/customers/:id # Delete customer
+```
+
+## Setup & Installation
+
+1. **Prerequisites**
+
+   - Node.js (v14 or higher)
+   - MongoDB (v4.4 or higher)
+   - npm or yarn
+
+2. **Environment Setup**
+   Create a `.env` file in the backend directory:
+
+   ```
+   NODE_ENV=development
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/job-tracker
+   JWT_SECRET=your_jwt_secret_key_here
+   JWT_EXPIRE=30d
+   ```
+
+3. **Installation Steps**
+
+   ```bash
+   # Clone the repository
+   git clone <repository-url>
+
+   # Install backend dependencies
+   cd job-tracker/backend
+   npm install
+
+   # Install frontend dependencies
+   cd ../frontend
+   npm install
+
+   # Start the backend server
+   cd ../backend
+   npm run dev
+
+   # Start the frontend application
+   cd ../frontend
+   npm start
+   ```
+
+## Security Features
+
+1. **Password Security**
+
+   - Bcrypt hashing
+   - Minimum password requirements
+   - Failed login attempt tracking
+
+2. **API Security**
+
+   - CORS protection
+   - Rate limiting
+   - Request validation
+   - XSS protection
+
+3. **Data Security**
+   - Input sanitization
+   - MongoDB injection protection
+   - Sensitive data encryption
+
+## Error Handling
+
+The application implements a comprehensive error handling system:
+
+1. **Operational Errors**
+
+   - Invalid input
+   - Invalid authentication
+   - Access denied
+   - Resource not found
+
+2. **Programming Errors**
+
+   - Database errors
+   - Validation errors
+   - Internal server errors
+
+3. **Error Response Format**
+   ```javascript
+   {
+     status: 'error',
+     message: 'Error description',
+     stack: 'Error stack trace' (development only)
+   }
+   ```
 
 ## Contributing
 
-We welcome contributions! Please feel free to fork the repository, make your changes, and submit a pull request.
-
-### Team Members:
-
-**Backend:**
-
-* Jaden Binettte
-* Shared Ordaz Santillan
-* Oluwashina Samuel Ibukun
-* Desire Vargas
-
-**Frontend:**
-
-* Desire Vargas
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
-[MIT License](LICENSE) (You might want to add a LICENSE file if you haven't already.)
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.

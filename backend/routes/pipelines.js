@@ -1,14 +1,26 @@
 //Imports
 const express = require("express");
 const router = express.Router();
-const pipecont = require("../controllers/pipelines");
+const {
+  createPipeline,
+  getPipelines,
+  getPipeline,
+  updatePipeline,
+  deletePipeline,
+} = require("../controllers/pipelines");
+const { protect } = require("../middleware/auth");
+
+// Apply authentication middleware to all routes
+router.use(protect);
 
 //GET all pipelines
-router.get("/", pipecont.getAllPipelines);
+router.route("/").post(createPipeline).get(getPipelines);
 
 //GET a single pipeline by ID
-router.get("/:id", pipecont.getPipelineById);
-router.post("/", pipecont.createPipeline);
-router.put("/:id", pipecont.updatePipeline);    
-router.delete("/:id", pipecont.deletePipeline);
+router
+  .route("/:id")
+  .get(getPipeline)
+  .put(updatePipeline)
+  .delete(deletePipeline);
+
 module.exports = router;

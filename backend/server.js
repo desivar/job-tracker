@@ -1,38 +1,173 @@
-const express = require('express');
-const dotenv = require('dotenv').config();
-const connectDB = require('./db/database');
-const cors = require('cors');
-const path = require('path'); // <- move to top
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger-output.json");
+const { errorHandler, notFound } = require("./middleware/error");
+const morgan = require("morgan");
+const config = require("./config/config");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
+const colors = require("colors");
 
-const port = process.env.PORT || 5000;
+// Import middleware
+const { protect } = require("./middleware/auth");
 
-connectDB();
+// Import routes
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
+const jobRoutes = require("./routes/jobs");
+const customerRoutes = require("./routes/customers");
+const pipelineRoutes = require("./routes/pipelines");
+const applicationRoutes = require("./routes/application");
+const dashboardRoutes = require("./routes/dashboard");
+const uploadRoutes = require("./routes/upload");
+const profileRoutes = require("./routes/profile");
 
 const app = express();
 
-// CORS setup
-app.use(cors({
-  origin: 'http://localhost:3000', // <-- typical for React dev server
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-}));
+// Connect to database
+connectDB();
 
+// Middleware
+app.use(morgan("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// API routes
-app.use('/api/users', require('./routes/user'));
-app.use('/api/customers', require('./routes/customers'));
-app.use('/api/jobs', require('./routes/jobs'));
-app.use('/api/pipelines', require('./routes/pipelines'));
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    credentials: true,
+  })
+);
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+// File upload configuration
+app.use(
+  fileUpload({
+    createParentPath: true,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
+    abortOnLimit: true,
+    responseOnLimit: "File size is too large",
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
-// React SPA catch-all (must come *after* all API routes)
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "uploads");
+const resumesDir = path.join(uploadsDir, "resumes");
+if (!require("fs").existsSync(uploadsDir)) {
+  require("fs").mkdirSync(uploadsDir);
+}
+if (!require("fs").existsSync(resumesDir)) {
+  require("fs").mkdirSync(resumesDir);
+}
+
+// Serve static files from the uploads directory
+app.use(
+  "/uploads/resumes",
+  express.static(path.join(__dirname, "uploads/resumes"))
+);
+
+// API Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Server is running" });
 });
 
-// Start server (must come last)
-app.listen(port, () => console.log(`Server listening on port ${port}!`));
+// Mount routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", protect, userRoutes);
+app.use("/api/jobs", protect, jobRoutes);
+app.use("/api/customers", protect, customerRoutes);
+app.use("/api/pipelines", protect, pipelineRoutes);
+app.use("/api/applications", protect, applicationRoutes);
+app.use("/api/dashboard", protect, dashboardRoutes);
+app.use("/api/upload", protect, uploadRoutes);
+app.use("/api/profile", protect, profileRoutes);
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+// Start server
+const PORT = config.port;
+
+// Check if port is in use
+const detectPort = (port) => {
+  return new Promise((resolve, reject) => {
+    const server = require("net").createServer();
+    server.once("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        resolve(false);
+      } else {
+        reject(err);
+      }
+    });
+    server.once("listening", () => {
+      server.close();
+      resolve(true);
+    });
+    server.listen(port);
+  });
+};
+
+// Start server with port checking
+const startServer = async () => {
+  try {
+    const isPortAvailable = await detectPort(PORT);
+    if (!isPortAvailable) {
+      console.log(
+        `Port ${PORT} is in use, trying to close existing connections...`
+      );
+      // Try to close any existing connections
+      const { execSync } = require("child_process");
+      try {
+        if (process.platform === "win32") {
+          execSync(`netstat -ano | findstr :${PORT}`);
+        } else {
+          execSync(
+            `lsof -i :${PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`
+          );
+        }
+      } catch (err) {
+        console.log("No existing process found on port", PORT);
+      }
+    }
+
+    const server = app.listen(PORT, () => {
+      console.log(
+        `Server running in ${config.env} mode on port ${PORT}`.yellow.bold
+      );
+    });
+
+    // Handle unhandled promise rejections
+    process.on("unhandledRejection", (err, promise) => {
+      console.log(`Error: ${err.message}`.red);
+      // Close server & exit process
+      server.close(() => process.exit(1));
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+module.exports = app;

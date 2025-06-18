@@ -1,5 +1,5 @@
 // src/api/auth.js
-import apiClient from './apiClient';
+import apiClient from "./apiClient";
 
 // NOTE: Your backend doesn't currently have authentication endpoints (login/register).
 // You would need to add routes like POST /auth/login to your Node.js backend
@@ -8,18 +8,48 @@ import apiClient from './apiClient';
 
 export const loginUser = async (email, password) => {
   try {
-    // This endpoint `auth/login` is an example. You'd need to implement it on backend.
-    const response = await apiClient.post('/auth/login', { email, password });
-    const { token, user } = response.data;
-    localStorage.setItem('token', token); // Store token
-    return user; // Return user data
+    const response = await apiClient.post("/api/auth/login", {
+      email,
+      password,
+    });
+
+    // The backend returns { success: true, data: { user, token } }
+    const { success, data } = response.data;
+
+    if (!success || !data || !data.token) {
+      throw new Error("Invalid response format from server");
+    }
+
+    // Store token in localStorage
+    localStorage.setItem("token", data.token);
+
+    // Store user data
+    const userData = data.user;
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // Configure axios defaults
+    apiClient.defaults.headers["Authorization"] = `Bearer ${data.token}`;
+
+    return userData;
   } catch (error) {
-    console.error('Login failed:', error);
-    throw error; // Propagate error for UI to handle
+    console.error("Login failed:", error.response?.data || error.message);
+    throw error;
   }
 };
 
 export const logoutUser = () => {
-  localStorage.removeItem('token');
-  // You might want to invalidate token on backend if needed
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  delete apiClient.defaults.headers["Authorization"];
+};
+
+export const getCurrentUser = () => {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+};
+
+export const isAuthenticated = () => {
+  const token = localStorage.getItem("token");
+  const user = getCurrentUser();
+  return !!(token && user);
 };

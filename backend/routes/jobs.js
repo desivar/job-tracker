@@ -1,16 +1,33 @@
 //Imports
 const express = require("express");
 const router = express.Router();
-const pipecont = require("../controllers/jobs");
+const { protect, authorize } = require("../middleware/auth");
+const {
+  getJobs,
+  getJob,
+  createJob,
+  updateJob,
+  deleteJob,
+} = require("../controllers/jobs");
 
-//GET all pipelines
-router.get("/", pipecont.getAllJobs);
+// All routes require authentication
+router.use(protect);
 
-//GET a single pipeline by ID
-router.get("/:id", pipecont.getJobById);
+// @route   GET /api/jobs
+// @desc    Get all jobs and create new job
+// @access  Private/Recruiter/HiringManager/Admin
+router
+  .route("/")
+  .get(getJobs)
+  .post(authorize("recruiter", "hiring_manager", "admin"), createJob);
 
-router.post("/", pipecont.createJob);
-router.put("/:id", pipecont.updateJob);
-router.delete("/:id", pipecont.deleteJob);
+// @route   GET/PUT/DELETE /api/jobs/:id
+// @desc    Get, update, or delete single job
+// @access  Private/Recruiter/HiringManager/Admin
+router
+  .route("/:id")
+  .get(getJob)
+  .put(authorize("recruiter", "hiring_manager", "admin"), updateJob)
+  .delete(authorize("recruiter", "hiring_manager", "admin"), deleteJob);
 
 module.exports = router;

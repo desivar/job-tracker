@@ -1,58 +1,166 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar'; // Create this component
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import CustomersPage from './pages/CustomersPage';
-import CustomerDetailsPage from './pages/CustomerDetailsPage';
-import PipelineBoard from './pages/PipelineBoard';
-import PipelinesPage from './pages/PipelinesPage'; // For managing pipeline definitions
-import UsersPage from './pages/UsersPage'; // For user management
-import UserProfilePage from './pages/UserProfilePage'; // For individual user profile
+import React from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  createRoutesFromElements,
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// A simple mock for authentication status
-// In a real app, this would come from AuthContext/Redux
-const isAuthenticated = () => !!localStorage.getItem('token'); // Check for token
+// Layout components
+import Layout from "./components/Layout";
+import RoleRoute from "./components/RoleRoute";
 
-// A PrivateRoute component to protect routes
-const PrivateRoute = ({ children }) => {
-  return isAuthenticated() ? children : <Navigate to="/login" />;
+// Pages
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Jobs from "./pages/Jobs";
+import Customers from "./pages/Customers";
+import Pipelines from "./pages/Pipelines";
+import Profile from "./pages/Profile";
+import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
+
+// Create theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1976d2",
+    },
+    secondary: {
+      main: "#dc004e",
+    },
+    background: {
+      default: "#f5f5f5",
+    },
+  },
+  typography: {
+    fontFamily: [
+      "-apple-system",
+      "BlinkMacSystemFont",
+      '"Segoe UI"',
+      "Roboto",
+      '"Helvetica Neue"',
+      "Arial",
+      "sans-serif",
+    ].join(","),
+  },
+});
+
+// Role-based route configurations
+const routeConfig = {
+  admin: {
+    dashboard: true,
+    jobs: true,
+    customers: true,
+    pipelines: true,
+    profile: true,
+  },
+  recruiter: {
+    dashboard: true,
+    jobs: true,
+    pipelines: true,
+    profile: true,
+  },
+  hiring_manager: {
+    dashboard: true,
+    jobs: true,
+    pipelines: true,
+    profile: true,
+  },
+  applicant: {
+    dashboard: true,
+    jobs: true,
+    profile: true,
+  },
 };
+
+// Create router with future flags
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route>
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+
+      {/* Protected routes */}
+      <Route
+        element={
+          <RoleRoute
+            allowedRoles={["admin", "recruiter", "hiring_manager", "applicant"]}
+          >
+            <Layout />
+          </RoleRoute>
+        }
+      >
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Dashboard - accessible by all roles */}
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Jobs - accessible by all roles */}
+        <Route path="/jobs" element={<Jobs />} />
+
+        {/* Customers - only accessible by admin */}
+        <Route
+          path="/customers"
+          element={
+            <RoleRoute allowedRoles={["admin"]}>
+              <Customers />
+            </RoleRoute>
+          }
+        />
+
+        {/* Pipelines - accessible by admin, recruiter, and hiring_manager */}
+        <Route
+          path="/pipelines"
+          element={
+            <RoleRoute allowedRoles={["admin", "recruiter", "hiring_manager"]}>
+              <Pipelines />
+            </RoleRoute>
+          }
+        />
+
+        {/* Profile - accessible by all roles */}
+        <Route path="/profile" element={<Profile />} />
+      </Route>
+
+      {/* 404 route */}
+      <Route path="*" element={<NotFound />} />
+    </Route>
+  ),
+  {
+    future: {
+      v7_startTransition: true,
+    },
+  }
+);
 
 function App() {
   return (
-    <Router>
-      <Navbar /> {/* Global navigation bar */}
-      <div style={{ paddingTop: '60px' }}> {/* Adjust for fixed navbar height */}
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/dashboard" />} /> {/* Redirect root to dashboard */}
-
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-          
-          <Route path="/customers" element={<PrivateRoute><CustomersPage /></PrivateRoute>} />
-          <Route path="/customers/:id" element={<PrivateRoute><CustomerDetailsPage /></PrivateRoute>} />
-          <Route path="/customers/new" element={<PrivateRoute><CustomerDetailsPage /></PrivateRoute>} /> {/* For creating new customer */}
-
-          <Route path="/jobs" element={<PrivateRoute><PipelineBoard /></PrivateRoute>} /> {/* Pipeline board is main jobs view */}
-          <Route path="/jobs/new" element={<PrivateRoute><div>Job Creation Form (TODO)</div></PrivateRoute>} /> {/* Separate job creation form */}
-          <Route path="/jobs/:id" element={<PrivateRoute><div>Job Details Page (TODO)</div></PrivateRoute>} />
-
-          <Route path="/pipelines" element={<PrivateRoute><PipelinesPage /></PrivateRoute>} />
-          <Route path="/pipelines/new" element={<PrivateRoute><div>Create Pipeline (TODO)</div></PrivateRoute>} />
-          <Route path="/pipelines/:id" element={<PrivateRoute><div>Edit Pipeline (TODO)</div></PrivateRoute>} />
-
-          <Route path="/users" element={<PrivateRoute><UsersPage /></PrivateRoute>} />
-          <Route path="/users/:id" element={<PrivateRoute><UserProfilePage /></PrivateRoute>} /> {/* For admin to edit user */}
-          <Route path="/profile" element={<PrivateRoute><UserProfilePage /></PrivateRoute>} /> {/* For user's own profile */}
-
-          {/* Catch-all for 404 */}
-          <Route path="*" element={<h2>404: Page Not Found</h2>} />
-        </Routes>
-      </div>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </ThemeProvider>
   );
 }
 

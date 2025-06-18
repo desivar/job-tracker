@@ -1,107 +1,155 @@
+const Customer = require("../models/Customer");
+const asyncHandler = require("express-async-handler");
 
-const mongodb = require("../db/database");
-const ObjectId = require("mongodb").ObjectId;
+// @desc    Get all customers
+// @route   GET /api/customers
+// @access  Private
+exports.getAllCustomers = asyncHandler(async (req, res) => {
+  const customers = await Customer.find({ createdBy: req.user._id })
+    .populate("createdBy", "username email")
+    .sort("-createdAt");
 
-const collection_name = "customers";
+  res.status(200).json(customers);
+});
 
-const getAllCustomers = async (req, res, next) => {
-  try {
-    const customers = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .find()
-      .toArray();
-    res.status(200).json(customers);
-  } catch (error) {
-    next(error);
+// @desc    Get customer by ID
+// @route   GET /api/customers/:id
+// @access  Private
+exports.getCustomerById = asyncHandler(async (req, res) => {
+  const customer = await Customer.findOne({
+    _id: req.params.id,
+    createdBy: req.user._id,
+  }).populate("createdBy", "username email");
+
+  if (!customer) {
+    res.status(404);
+    throw new Error("Customer not found");
   }
-};
 
-const getCustomerById = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const customer = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .findOne({ _id: new ObjectId(id) });
-    if (!customer) {
-      return res.status(404).json({ message: "Customer not found" });
-    }
-    res.status(200).json(customer);
-  } catch (error) {
-    next(error);
+  res.status(200).json(customer);
+});
+
+// @desc    Create new customer
+// @route   POST /api/customers
+// @access  Private
+exports.createCustomer = asyncHandler(async (req, res) => {
+  const { firstName, lastName, email, phone, address, company, notes, tags } =
+    req.body;
+
+  // Check if customer with email already exists for this user
+  const customerExists = await Customer.findOne({
+    email,
+    createdBy: req.user._id,
+  });
+
+  if (customerExists) {
+    res.status(400);
+    throw new Error("Customer with this email already exists");
   }
-};
 
-const createCustomer = async (req, res, next) => {
-  try {
-    const customer = {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      address: req.body.address,
-      phone: req.body.phone,
+  const customer = await Customer.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    address,
+    company,
+    notes,
+    tags,
+    createdBy: req.user._id,
+  });
+
+  res.status(201).json(customer);
+});
+
+// @desc    Update customer
+// @route   PUT /api/customers/:id
+// @access  Private
+exports.updateCustomer = asyncHandler(async (req, res) => {
+  const customer = await Customer.findOne({
+    _id: req.params.id,
+    createdBy: req.user._id,
+  });
+
+  if (!customer) {
+    res.status(404);
+    throw new Error("Customer not found");
+  }
+
+  // Check if email is being changed and if it's already taken
+  if (req.body.email && req.body.email !== customer.email) {
+    const emailExists = await Customer.findOne({
       email: req.body.email,
-      notes: req.body.notes
-    };
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .insertOne(customer);
-    res.status(201).json({ id: result.insertedId });
-  } catch (error) {
-    next(error);
-  }
-};
+      createdBy: req.user._id,
+      _id: { $ne: customer._id },
+    });
 
-const updateCustomer = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const customer = {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      address: req.body.address,
-      phone: req.body.phone,
-      email: req.body.email,
-      notes: req.body.notes
-    };
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .updateOne({ _id: new ObjectId(id) }, { $set: customer });
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "Customer not found" });
+    if (emailExists) {
+      res.status(400);
+      throw new Error("Email already in use by another customer");
     }
-    res.status(200).json({ message: "Customer updated" });
-  } catch (error) {
-    next(error);
   }
-};
 
-const deleteCustomer = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Customer not found" });
+  const updatedCustomer = await Customer.findOneAndUpdate(
+    { _id: req.params.id, createdBy: req.user._id },
+    { $set: req.body },
+    { new: true, runValidators: true }
+  ).populate("createdBy", "username email");
+
+  res.status(200).json(updatedCustomer);
+});
+
+// @desc    Delete customer
+// @route   DELETE /api/customers/:id
+// @access  Private
+exports.deleteCustomer = asyncHandler(async (req, res) => {
+  const customer = await Customer.findOne({
+    _id: req.params.id,
+    createdBy: req.user._id,
+  });
+
+  if (!customer) {
+    res.status(404);
+    throw new Error("Customer not found");
+  }
+
+  await customer.deleteOne();
+  res.status(200).json({ message: "Customer removed successfully" });
+});
+
+// @desc    Get customer statistics
+// @route   GET /api/customers/stats
+// @access  Private
+exports.getCustomerStats = asyncHandler(async (req, res) => {
+  const stats = await Customer.aggregate([
+    { $match: { createdBy: req.user._id } },
+    {
+      $group: {
+        _id: null,
+        totalCustomers: { $sum: 1 },
+        activeCustomers: {
+          $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] },
+        },
+        inactiveCustomers: {
+          $sum: { $cond: [{ $eq: ["$status", "inactive"] }, 1, 0] },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalCustomers: 1,
+        activeCustomers: 1,
+        inactiveCustomers: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json(
+    stats[0] || {
+      totalCustomers: 0,
+      activeCustomers: 0,
+      inactiveCustomers: 0,
     }
-    res.status(200).json({ message: "Customer deleted" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-module.exports = { 
-  getAllCustomers, 
-  getCustomerById, 
-  createCustomer, 
-  updateCustomer, 
-  deleteCustomer 
-};
+  );
+});

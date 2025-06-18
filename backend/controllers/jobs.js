@@ -1,107 +1,134 @@
+const Job = require("../models/Job");
+const asyncHandler = require("express-async-handler");
 
-const mongodb = require("../db/database");
-const ObjectId = require("mongodb").ObjectId;
+// @desc    Create a new job
+// @route   POST /api/jobs
+// @access  Private (Recruiter)
+const createJob = asyncHandler(async (req, res) => {
+  req.body.recruiter = req.user.id;
+  const job = await Job.create(req.body);
+  res.status(201).json({ success: true, data: job });
+});
 
-const collection_name = "jobs";
+// @desc    Get all jobs
+// @route   GET /api/jobs
+// @access  Public
+const getJobs = asyncHandler(async (req, res) => {
+  const query = {};
 
-const getAllJobs = async (req, res, next) => {
-  try {
-    const jobs = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .find()
-      .toArray();
-    res.status(200).json(jobs);
-  } catch (error) {
-    next(error);
+  // Build filter object
+  if (req.query.title) {
+    query.$text = { $search: req.query.title };
   }
-};
-
-const getJobById = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const job = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .findOne({ _id: new ObjectId(id) });
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-    res.status(200).json(job);
-  } catch (error) {
-    next(error);
+  if (req.query.company) {
+    query.company = { $regex: req.query.company, $options: "i" };
   }
-};
-
-const createJob = async (req, res, next) => {
-  try {
-    const job = {
-      customer_id: new ObjectId(req.body.customer_id),
-      pipeline_id: new ObjectId(req.body.pipeline_id),
-      pipeline_step: req.body.pipeline_step,
-      job_name: req.body.job_name,
-      comments: req.body.comments,
-      address: req.body.address
-    };
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .insertOne(job);
-    res.status(201).json({ id: result.insertedId });
-  } catch (error) {
-    next(error);
+  if (req.query.location) {
+    query.location = { $regex: req.query.location, $options: "i" };
   }
-};
-
-const updateJob = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const job = {
-      customer_id: new ObjectId(req.body.customer_id),
-      pipeline_id: new ObjectId(req.body.pipeline_id),
-      pipeline_step: req.body.pipeline_step,
-      job_name: req.body.job_name,
-      comments: req.body.comments,
-      address: req.body.address
-    };
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .updateOne({ _id: new ObjectId(id) }, { $set: job });
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-    res.status(200).json({ message: "Job updated" });
-  } catch (error) {
-    next(error);
+  if (req.query.type) {
+    query.type = req.query.type;
   }
-};
-
-const deleteJob = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection(collection_name)
-      .deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-    res.status(200).json({ message: "Job deleted" });
-  } catch (error) {
-    next(error);
+  if (req.query.status) {
+    query.status = req.query.status;
   }
-};
+  if (req.query.experience) {
+    query.experience = req.query.experience;
+  }
 
-module.exports = { 
-  getAllJobs, 
-  getJobById, 
-  createJob, 
-  updateJob, 
-  deleteJob 
+  // Pagination
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 10;
+  const startIndex = (page - 1) * limit;
+
+  const jobs = await Job.find(query)
+    .populate("recruiter", "firstName lastName company")
+    .skip(startIndex)
+    .limit(limit)
+    .sort("-createdAt");
+
+  const total = await Job.countDocuments(query);
+
+  res.status(200).json({
+    success: true,
+    count: jobs.length,
+    pagination: {
+      page,
+      pages: Math.ceil(total / limit),
+      total,
+    },
+    data: jobs,
+  });
+});
+
+// @desc    Get single job
+// @route   GET /api/jobs/:id
+// @access  Public
+const getJob = asyncHandler(async (req, res) => {
+  const job = await Job.findById(req.params.id).populate(
+    "recruiter",
+    "firstName lastName company"
+  );
+
+  if (!job) {
+    res.status(404);
+    throw new Error("Job not found");
+  }
+
+  res.status(200).json({ success: true, data: job });
+});
+
+// @desc    Update job
+// @route   PUT /api/jobs/:id
+// @access  Private (Recruiter, Job Owner)
+const updateJob = asyncHandler(async (req, res) => {
+  let job = await Job.findById(req.params.id);
+
+  if (!job) {
+    res.status(404);
+    throw new Error("Job not found");
+  }
+
+  // Make sure user is job recruiter
+  if (job.recruiter.toString() !== req.user.id && req.user.role !== "admin") {
+    res.status(401);
+    throw new Error("Not authorized to update this job");
+  }
+
+  job = await Job.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({ success: true, data: job });
+});
+
+// @desc    Delete job
+// @route   DELETE /api/jobs/:id
+// @access  Private (Recruiter, Job Owner)
+const deleteJob = asyncHandler(async (req, res) => {
+  const job = await Job.findById(req.params.id);
+
+  if (!job) {
+    res.status(404);
+    throw new Error("Job not found");
+  }
+
+  // Make sure user is job recruiter
+  if (job.recruiter.toString() !== req.user.id && req.user.role !== "admin") {
+    res.status(401);
+    throw new Error("Not authorized to delete this job");
+  }
+
+  await job.remove();
+
+  res.status(200).json({ success: true, data: {} });
+});
+
+module.exports = {
+  createJob,
+  getJobs,
+  getJob,
+  updateJob,
+  deleteJob,
 };

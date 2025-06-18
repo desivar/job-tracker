@@ -1,18 +1,18 @@
 // src/api/users.js
-import apiClient from './apiClient';
+import apiClient from "./apiClient";
 
 export const getAllUsers = async () => {
-  const response = await apiClient.get('/users');
+  const response = await apiClient.get("/api/users");
   return response.data;
 };
 
 export const getUserById = async (id) => {
-  const response = await apiClient.get(`/users/${id}`);
+  const response = await apiClient.get(`/api/users/${id}`);
   return response.data;
 };
 
 export const createUser = async (userData) => {
-  const response = await apiClient.post('/users', userData);
+  const response = await apiClient.post("/api/users", userData);
   return response.data;
 };
 
