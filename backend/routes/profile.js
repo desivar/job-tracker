@@ -7,15 +7,15 @@ const {
   getApplicationHistory,
 } = require("../controllers/profile");
 
-const { protect } = require("../middleware/auth");
+
 
 router
   .route("/users/profile")
-  .get(protect, getProfile)
-  .put(protect, updateProfile);
+  .get( getProfile)
+  .put( updateProfile);
 
-router.route("/upload/resume").post(protect, uploadResume);
+router.route("/upload/resume").post( uploadResume);
 
-router.route("/applications/me").get(protect, getApplicationHistory);
+router.route("/applications/me").get( getApplicationHistory);
 
 module.exports = router;

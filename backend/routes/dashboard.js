@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/auth");
+
 const { asyncHandler } = require("../middleware/error");
 const mongodb = require("../db/database");
 const ObjectId = require("mongodb").ObjectId;
@@ -11,12 +11,12 @@ const {
 } = require("../controllers/dashboard");
 
 // Get dashboard statistics
-router.get("/stats", protect, getDashboardStats);
+router.get("/stats",  getDashboardStats);
 
 // Get job trends (last 7 days)
 router.get(
   "/job-trends",
-  protect,
+
   asyncHandler(async (req, res) => {
     const db = mongodb.getDatabase().db();
     const sevenDaysAgo = new Date();
@@ -55,7 +55,7 @@ router.get(
 // Get pipeline statistics
 router.get(
   "/pipeline-stats",
-  protect,
+
   asyncHandler(async (req, res) => {
     const db = mongodb.getDatabase().db();
 
@@ -81,7 +81,7 @@ router.get(
   })
 );
 
-router.get("/activities", protect, getRecentActivities);
-router.get("/job-stats", protect, getJobStats);
+router.get("/activities",  getRecentActivities);
+router.get("/job-stats",  getJobStats);
 
 module.exports = router;

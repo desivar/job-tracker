@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/auth");
+
 const { uploadResume } = require("../controllers/upload.controller");
 const path = require("path");
 const fs = require("fs");
@@ -14,12 +14,12 @@ if (!fs.existsSync(uploadsDir)) {
 // @route   POST /api/upload/resume
 // @desc    Upload a resume
 // @access  Private
-router.post("/resume", protect, uploadResume);
+router.post("/resume",  uploadResume);
 
 // @route   GET /api/upload/resumes/:filename
 // @desc    Get uploaded file
 // @access  Private
-router.get("/resumes/:filename", protect, (req, res) => {
+router.get("/resumes/:filename",  (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(uploadsDir, filename);
 

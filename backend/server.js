@@ -13,10 +13,7 @@ const fileUpload = require("express-fileupload");
 const colors = require("colors");
 
 // Import middleware
-const { protect } = require("./middleware/auth");
 
-// Import routes
-const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const jobRoutes = require("./routes/jobs");
 const customerRoutes = require("./routes/customers");
@@ -91,15 +88,15 @@ app.get("/health", (req, res) => {
 });
 
 // Mount routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", protect, userRoutes);
-app.use("/api/jobs", protect, jobRoutes);
-app.use("/api/customers", protect, customerRoutes);
-app.use("/api/pipelines", protect, pipelineRoutes);
-app.use("/api/applications", protect, applicationRoutes);
-app.use("/api/dashboard", protect, dashboardRoutes);
-app.use("/api/upload", protect, uploadRoutes);
-app.use("/api/profile", protect, profileRoutes);
+
+app.use("/api/users",  userRoutes);
+app.use("/api/jobs",  jobRoutes);
+app.use("/api/customers",  customerRoutes);
+app.use("/api/pipelines",  pipelineRoutes);
+app.use("/api/applications",  applicationRoutes);
+app.use("/api/dashboard",  dashboardRoutes);
+app.use("/api/upload",  uploadRoutes);
+app.use("/api/profile",  profileRoutes);
 
 // Error handling
 app.use(notFound);

@@ -8,10 +8,9 @@ const {
   updatePipeline,
   deletePipeline,
 } = require("../controllers/pipelines");
-const { protect } = require("../middleware/auth");
 
-// Apply authentication middleware to all routes
-router.use(protect);
+
+
 
 //GET all pipelines
 router.route("/").post(createPipeline).get(getPipelines);
