@@ -30,6 +30,7 @@ import * as yup from "yup";
 import { toast } from "react-toastify";
 import axios from "axios";
 
+const apiurl = process.env.REACT_APP_BACKEND_URL;
 const validationSchema = yup.object({
   name: yup.string().required("Name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -52,7 +53,7 @@ function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/customers");
+      const response = await axios.get(`${apiurl}/api/customers`);
       setCustomers(response.data);
     } catch (error) {
       toast.error("Error fetching customers");
@@ -74,12 +75,12 @@ function Customers() {
       try {
         if (editingCustomer) {
           await axios.put(
-            `http://localhost:5000/api/customers/${editingCustomer._id}`,
+            `${apiurl}/api/customers/${editingCustomer._id}`,
             values
           );
           toast.success("Customer updated successfully");
         } else {
-          await axios.post("http://localhost:5000/api/customers", values);
+          await axios.post(`${apiurl}/api/customers`, values);
           toast.success("Customer created successfully");
         }
         setOpenDialog(false);
@@ -111,7 +112,7 @@ function Customers() {
   const handleDelete = async (customerId) => {
     if (window.confirm("Are you sure you want to delete this customer?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/customers/${customerId}`);
+        await axios.delete(`${apiurl}/api/customers/${customerId}`);
         toast.success("Customer deleted successfully");
         fetchCustomers();
       } catch (error) {

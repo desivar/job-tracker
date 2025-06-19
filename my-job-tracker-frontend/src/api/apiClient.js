@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // Set backend URL to port 5003
-const API_BASE_URL = "http://localhost:5003";
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL ;
 
 // Create axios instance
 const apiClient = axios.create({

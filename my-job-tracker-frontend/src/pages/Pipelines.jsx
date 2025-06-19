@@ -34,6 +34,9 @@ import * as yup from "yup";
 import axios from "axios";
 import apiClient from "../api/apiClient";
 
+
+const apiurl = process.env.REACT_APP_BACKEND_URL;
+console.log("API URL:", apiurl);
 // Define validation schema
 const validationSchema = yup.object({
   name: yup.string().required("Pipeline name is required"),
@@ -66,7 +69,7 @@ function Pipelines() {
 
   const fetchPipelines = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/pipelines");
+      const response = await axios.get(`${apiurl}/api/pipelines`);
       setPipelines(response.data);
     } catch (error) {
       toast.error("Error fetching pipelines");
@@ -78,7 +81,7 @@ function Pipelines() {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get("/api/pipelines");
+      const response = await apiClient.get(`${apiurl}/api/pipelines`);
 
       // Group applications by stage
       const grouped = PIPELINE_STAGES.reduce((acc, stage) => {
@@ -105,12 +108,12 @@ function Pipelines() {
       try {
         if (editingPipeline) {
           await axios.put(
-            `http://localhost:5000/api/pipelines/${editingPipeline._id}`,
+            `${apiurl}/api/pipelines/${editingPipeline._id}`,
             values
           );
           toast.success("Pipeline updated successfully");
         } else {
-          await axios.post("http://localhost:5000/api/pipelines", values);
+          await axios.post(`${apiurl}/api/pipelines`, values);
           toast.success("Pipeline created successfully");
         }
         setOpenDialog(false);
@@ -140,7 +143,7 @@ function Pipelines() {
   const handleDelete = async (pipelineId) => {
     if (window.confirm("Are you sure you want to delete this pipeline?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/pipelines/${pipelineId}`);
+        await axios.delete(`${apiurl}/api/pipelines/${pipelineId}`);
         toast.success("Pipeline deleted successfully");
         fetchPipelines();
       } catch (error) {
